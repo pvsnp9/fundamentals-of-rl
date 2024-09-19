@@ -10,12 +10,42 @@ from IPython.display import display, HTML
 import math
 
 # Save the heatmap of the value function at each iteration
-def save_value_function_as_image(V: np.ndarray, iteration: int, title: str = "Value Function"):
-    plt.figure(figsize=(6, 6))
-    sns.heatmap(V, annot=True, cmap="coolwarm", cbar=True)
-    plt.title(f"{title} (Iteration {iteration})")
-    plt.xlabel("Column")
-    plt.ylabel("Row")
+def save_value_function_as_image(V: np.ndarray, iteration: int, title: str = "Value Function", policy=None):
+    """
+    Save images the value function or policy over a grid world.
+
+    Args:
+    - values (np.ndarray): The value function (2D array of values for each state).
+    - title (str): The title of the plot.
+    - policy (np.ndarray): (Optional) The policy corresponding to each state, used to overlay arrows.
+    """
+    fig, ax = plt.subplots()
+    ax.imshow(V, cmap="coolwarm", interpolation="none")
+    
+    # Add the actual V in the grid cells
+    for i in range(V.shape[0]):
+        for j in range(V.shape[1]):
+            ax.text(j, i, f'{V[i, j]:.2f}', ha='center', va='center', color='black')
+    
+    ax.set_title(f"{title}_sweep_{iteration}")
+    plt.colorbar(ax.imshow(V, cmap="coolwarm"))
+    
+    # overlay the policy as arrows
+    if policy is not None:
+        for i in range(policy.shape[0]):
+            for j in range(policy.shape[1]):
+                if np.sum(policy[i, j]) == 0:  # Skip terminal states
+                    continue
+                action = np.argmax(policy[i, j])
+                if action == 0:  # Up
+                    ax.arrow(j, i, 0, -0.3, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 1:  # Down
+                    ax.arrow(j, i, 0, 0.3, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 2:  # Left
+                    ax.arrow(j, i, -0.3, 0, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 3:  # Right
+                    ax.arrow(j, i, 0.3, 0, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                    
     if not os.path.exists(Config.temp_image_dir): os.makedirs(Config.temp_image_dir)
     plt.savefig(f"{Config.temp_image_dir}/iteration_{iteration:03d}.png")
     plt.close()
@@ -42,6 +72,52 @@ def create_gif_from_images(file_name:str):
     print(f"GIF saved as {output_path} and images have been deleted.")
 
 
+def visualize_values(values, title="Value Function", policy=None):
+    """
+    Visualizes the value function or policy over a grid world.
+
+    Args:
+    - values (np.ndarray): The value function (2D array of values for each state).
+    - title (str): The title of the plot.
+    - policy (np.ndarray): (Optional) The policy corresponding to each state, used to overlay arrows.
+    """
+    fig, ax = plt.subplots()
+    ax.imshow(values, cmap="coolwarm", interpolation="none")
+    
+    # Add the actual values in the grid cells
+    for i in range(values.shape[0]):
+        for j in range(values.shape[1]):
+            ax.text(j, i, f'{values[i, j]:.2f}', ha='center', va='center', color='black')
+    
+    ax.set_title(title)
+    plt.colorbar(ax.imshow(values, cmap="coolwarm"))
+    
+    # Optionally overlay the policy as arrows
+    if policy is not None:
+        for i in range(policy.shape[0]):
+            for j in range(policy.shape[1]):
+                if np.sum(policy[i, j]) == 0:  # Skip terminal states
+                    continue
+                action = np.argmax(policy[i, j])
+                if action == 0:  # Up
+                    ax.arrow(j, i, 0, -0.3, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 1:  # Down
+                    ax.arrow(j, i, 0, 0.3, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 2:  # Left
+                    ax.arrow(j, i, -0.3, 0, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+                elif action == 3:  # Right
+                    ax.arrow(j, i, 0.3, 0, head_width=0.2, head_length=0.2, fc='blue', ec='blue')
+
+    plt.show()
+
+
+def visualize_value_function(V:np.ndarray, title: str="Value function")->None:
+    plt.figure(figsize=(6,6))
+    sns.heatmap(V,annot=True, cmap="coolwarm", cbar=True)
+    plt.title(title)
+    plt.xlabel("Column")
+    plt.ylabel("Row")
+    plt.show()
 
 def display_images_in_grid(image_paths: list, max_cols: int = 3):
     """
