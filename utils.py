@@ -2,6 +2,7 @@ import imageio
 import os
 import seaborn as sns
 import numpy as np
+from collections import defaultdict
 from datetime import datetime
 import matplotlib.pyplot as plt
 from config import Config 
@@ -172,3 +173,73 @@ def plot_statewise_value_function(V, grid_size=(4, 4)):
     plt.colorbar(label="Value")
     plt.show()
 
+def plot_blackjack_values(V: defaultdict):
+    """
+    Visualize the state-value function for Blackjack using heatmaps.
+    Two heatmaps will be generated: one for usable ace and one for no usable ace.
+    
+    Args:
+    - V (defaultdict): A dictionary mapping state tuples (player total, dealer card, usable ace) to values.
+    """
+    
+    # Prepare the grids
+    player_totals = np.arange(12, 22)  # Player's hand total (12-21, since below 12 player always hits)
+    dealer_cards = np.arange(1, 11)    # Dealer's visible card (1-10, with 1 as Ace)
+    
+    # Value grid for hands with a usable ace
+    usable_ace_values = np.zeros((len(player_totals), len(dealer_cards)))
+    
+    # Value grid for hands without a usable ace
+    no_usable_ace_values = np.zeros((len(player_totals), len(dealer_cards)))
+    
+    # Fill the grids with the corresponding values from V
+    for i, player_total in enumerate(player_totals):
+        for j, dealer_card in enumerate(dealer_cards):
+            usable_ace_values[i, j] = V[(player_total, dealer_card, 1)]  # With usable ace
+            no_usable_ace_values[i, j] = V[(player_total, dealer_card, 0)]  # Without usable ace
+    
+    # Plot the heatmap for usable ace
+    fig, ax = plt.subplots(1, 2, figsize=(12, 6))
+    
+    # First Heatmap (Usable Ace)
+    cax1 = ax[0].imshow(usable_ace_values, cmap="coolwarm", origin="lower", extent=[0.5, 10.5, 11.5, 21.5])
+    ax[0].set_title("State Value (Usable Ace)")
+    ax[0].set_xlabel("Dealer's Visible Card")
+    ax[0].set_ylabel("Player's Hand Total")
+    
+    # Adjust the grid to fit within the extent properly
+    ax[0].set_xticks(np.arange(1, 11))
+    ax[0].set_yticks(np.arange(12, 22))
+    
+    # Center the text and limit decimal places, reduce font size if necessary
+    for i in range(usable_ace_values.shape[0]):
+        for j in range(usable_ace_values.shape[1]):
+            # Adjust the coordinates to place the text in the center of each grid cell
+            ax[0].text(j + 1, i + 12, f'{usable_ace_values[i, j]:.1f}', ha='center', va='center', color='black', fontsize=8)
+    
+    # Colorbar for usable ace heatmap
+    fig.colorbar(cax1, ax=ax[0], label="Value")
+    
+    # Second Heatmap (No Usable Ace)
+    cax2 = ax[1].imshow(no_usable_ace_values, cmap="coolwarm", origin="lower", extent=[0.5, 10.5, 11.5, 21.5])
+    ax[1].set_title("State Value (No Usable Ace)")
+    ax[1].set_xlabel("Dealer's Visible Card")
+    ax[1].set_ylabel("Player's Hand Total")
+    
+    # Adjust the grid to fit within the extent properly
+    ax[1].set_xticks(np.arange(1, 11))
+    ax[1].set_yticks(np.arange(12, 22))
+    
+    # Center the text and limit decimal places, reduce font size if necessary
+    for i in range(no_usable_ace_values.shape[0]):
+        for j in range(no_usable_ace_values.shape[1]):
+            # Adjust the coordinates to place the text in the center of each grid cell
+            ax[1].text(j + 1, i + 12, f'{no_usable_ace_values[i, j]:.1f}', ha='center', va='center', color='black', fontsize=8)
+    
+    # Colorbar for no usable ace heatmap
+    fig.colorbar(cax2, ax=ax[1], label="Value")
+    
+    # Adjust layout and titles to prevent overlap
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.85)
+    plt.show()
