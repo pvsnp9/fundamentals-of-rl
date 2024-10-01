@@ -154,3 +154,21 @@ def display_images_in_grid(image_paths: list, max_cols: int = 3):
     
     # Display the generated HTML in the notebook
     display(HTML(html_code))
+
+
+# plot state-wise-values 
+def plot_statewise_value_function(V, grid_size=(4, 4)):
+    value_grid = np.zeros(grid_size)
+    for i in range(grid_size[0]):
+        for j in range(grid_size[1]):
+            value_grid[i, j] = V[(i, j)]
+
+    plt.imshow(value_grid, cmap="coolwarm", origin="upper")
+    for i in range(grid_size[0]):
+        for j in range(grid_size[1]):
+            plt.text(j, i, f'{value_grid[i, j]:.2f}', ha='center', va='center', color='black')
+    
+    plt.title("State Value Function")
+    plt.colorbar(label="Value")
+    plt.show()
+
